@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Email Forensic AI</title>
+
+    <link rel="stylesheet" href="style.css">
+
+    <!-- Leaflet Map CSS -->
+    <link
+        rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    >
+</head>
+
+<body>
+
+    <!-- =========================
+         TOP HEADER
+    ========================== -->
+
+    <header class="topbar">
+
+        <div class="logo-area">
+
+            <div class="logo">
+                ✦
+            </div>
+
+            <div>
+                <h2>Email Forensic <span>AI</span></h2>
+                <p>Threat Intelligence Platform</p>
+            </div>
+
+        </div>
+
+        <div class="status">
+            <span class="status-dot"></span>
+            System Operational
+        </div>
+
+    </header>
+
+
+    <!-- =========================
+         NAVIGATION
+    ========================== -->
+
+    <nav class="navigation">
+
+        <button class="nav-item active" data-page="dashboard">
+            <span>▦</span>
+            Dashboard
+        </button>
+
+        <button class="nav-item" data-page="investigate">
+            <span>⌁</span>
+            Investigate
+        </button>
+
+        <button class="nav-item" data-page="map">
+            <span>◎</span>
+            Origin Map
+        </button>
+
+        <button class="nav-item" data-page="forensics">
+            <span>◈</span>
+            Forensics
+        </button>
+
+        <button class="nav-item" data-page="reports">
+            <span>▤</span>
+            Reports
+        </button>
+
+    </nav>
+
+
+    <!-- =========================
+         MAIN
+    ========================== -->
+
+    <main>
+
+
+        <!-- =========================
+             DASHBOARD
+        ========================== -->
+
+        <section id="dashboardPage" class="page active-page">
+
+            <section class="hero">
+
+                <div class="badge">
+                    ✦ AI-POWERED EMAIL FORENSICS
+                </div>
+
+                <h1>
+                    Investigate.
+                    <span>Detect.</span>
+                    Protect.
+                </h1>
+
+                <p>
+                    Analyze suspicious emails with AI-powered threat detection,
+                    email header forensics, domain intelligence and
+                    infrastructure analysis.
+                </p>
+
+            </section>
+
+
+            <!-- UPLOAD -->
+
+            <section class="upload-card">
+
+                <div class="card-header">
+
+                    <div>
+                        <h2>Investigate Suspicious Email</h2>
+
+                        <p>
+                            Upload the original <b>.EML</b> file for forensic analysis.
+                        </p>
+                    </div>
+
+                    <div class="secure">
+                        🔒 Secure Analysis
+                    </div>
+
+                </div>
+
+
+                <div class="drop-area" id="dropArea">
+
+                    <input
+                        type="file"
+                        id="fileInput"
+                        accept=".eml"
+                        hidden
+                    >
+
+                    <div class="upload-circle">
+                        ↑
+                    </div>
+
+                    <h3>
+                        Drop your .EML file here
+                    </h3>
+
+                    <p>
+                        or
+                        <button id="browseButton">
+                            Browse Files
+                        </button>
+                    </p>
+
+                    <small>
+                        Supported format: .EML • Maximum size: 25 MB
+                    </small>
+
+                </div>
+
+
+                <div class="file-box" id="fileBox">
+
+                    <div class="file-info">
+
+                        <div class="file-icon">
+                            ✉
+                        </div>
+
+                        <div>
+                            <strong id="fileName">
+                                email.eml
+                            </strong>
+
+                            <span id="fileSize">
+                                0 KB
+                            </span>
+                        </div>
+
+                    </div>
+
+                    <button id="removeButton">
+                        Remove
+                    </button>
+
+                </div>
+
+
+                <button
+                    class="analyze-button"
+                    id="analyzeButton"
+                >
+                    Analyze Email
+                    <span>→</span>
+                </button>
+
+                <div id="message"></div>
+
+            </section>
+
+
+            <!-- FEATURES -->
+
+            <section class="features">
+
+                <div class="section-label">
+                    FORENSIC ENGINE
+                </div>
+
+                <h2>What we analyze</h2>
+
+
+                <div class="feature-grid">
+
+                    <div class="feature">
+                        <div class="feature-icon">🛡</div>
+                        <h3>Authentication</h3>
+                        <p>SPF, DKIM and DMARC verification.</p>
+                    </div>
+
+                    <div class="feature">
+                        <div class="feature-icon">⌁</div>
+                        <h3>Header Forensics</h3>
+                        <p>Received, Reply-To and Return-Path analysis.</p>
+                    </div>
+
+                    <div class="feature">
+                        <div class="feature-icon">↗</div>
+                        <h3>URL Intelligence</h3>
+                        <p>Detect suspicious and malicious links.</p>
+                    </div>
+
+                    <div class="feature">
+                        <div class="feature-icon">◉</div>
+                        <h3>AI Detection</h3>
+                        <p>Detect phishing, BEC and fraud patterns.</p>
+                    </div>
+
+                    <div class="feature">
+                        <div class="feature-icon">⌘</div>
+                        <h3>Infrastructure</h3>
+                        <p>Investigate IP, ASN and hosting infrastructure.</p>
+                    </div>
+
+                    <div class="feature">
+                        <div class="feature-icon">◎</div>
+                        <h3>Origin Analysis</h3>
+                        <p>Identify probable origin infrastructure.</p>
+                    </div>
+
+                </div>
+
+            </section>
+
+        </section>
+
+
+        <!-- =========================
+             INVESTIGATE PAGE
+        ========================== -->
+
+        <section id="investigatePage" class="page">
+
+            <div class="page-heading">
+
+                <div class="section-label">
+                    EMAIL INVESTIGATION
+                </div>
+
+                <h1>Investigate Email</h1>
+
+                <p>
+                    Upload suspicious email evidence for analysis.
+                </p>
+
+            </div>
+
+            <div class="simple-card">
+
+                <div class="big-icon">
+                    ✉
+                </div>
+
+                <h2>Start a New Investigation</h2>
+
+                <p>
+                    Upload an original .EML file to begin forensic analysis.
+                </p>
+
+                <button
+                    class="primary-button"
+                    id="investigateUpload"
+                >
+                    Upload Email →
+                </button>
+
+            </div>
+
+        </section>
+
+
+        <!-- =========================
+             ORIGIN MAP PAGE
+        ========================== -->
+
+        <section id="mapPage" class="page">
+
+            <div class="page-heading">
+
+                <div class="section-label">
+                    INFRASTRUCTURE INTELLIGENCE
+                </div>
+
+                <h1>Probable Origin Infrastructure</h1>
+
+                <p>
+                    Geographic intelligence derived from available
+                    technical evidence.
+                </p>
+
+            </div>
+
+
+            <div class="map-layout">
+
+                <!-- MAP -->
+
+                <div class="map-container">
+
+                    <div id="originMap"></div>
+
+                </div>
+
+
+                <!-- INFORMATION -->
+
+                <div class="origin-panel">
+
+                    <div class="panel-title">
+                        <span class="location-dot"></span>
+                        Infrastructure Detected
+                    </div>
+
+
+                    <h2>
+                        Terna Engineering College
+                    </h2>
+
+                    <p class="location">
+                        Navi Mumbai, Maharashtra
+                    </p>
+
+
+                    <div class="info-line">
+                        <span>IP Address</span>
+                        <strong>203.xxx.xxx.xxx</strong>
+                    </div>
+
+                    <div class="info-line">
+                        <span>ASN</span>
+                        <strong>Demo ASN</strong>
+                    </div>
+
+                    <div class="info-line">
+                        <span>Network</span>
+                        <strong>Educational</strong>
+                    </div>
+
+                    <div class="info-line">
+                        <span>Reputation</span>
+                        <strong class="safe">
+                            Demo Data
+                        </strong>
+                    </div>
+
+                    <div class="info-line">
+                        <span>Confidence</span>
+                        <strong class="confidence-text">
+                            76%
+                        </strong>
+                    </div>
+
+
+                    <div class="map-warning">
+
+                        <strong>
+                            ⚠ Attribution Notice
+                        </strong>
+
+                        <p>
+                            This represents probable origin infrastructure
+                            based on available technical evidence. It does
+                            not establish the attacker's physical location
+                            or identity.
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =========================
+             FORENSICS PAGE
+        ========================== -->
+
+        <section id="forensicsPage" class="page">
+
+            <div class="page-heading">
+
+                <div class="section-label">
+                    EMAIL FORENSICS
+                </div>
+
+                <h1>Header Forensics</h1>
+
+                <p>
+                    Inspect authentication and email routing evidence.
+                </p>
+
+            </div>
+
+
+            <div class="forensic-grid">
+
+                <div class="forensic-card">
+                    <span>SPF</span>
+                    <strong class="failed">FAILED</strong>
+                </div>
+
+                <div class="forensic-card">
+                    <span>DKIM</span>
+                    <strong class="failed">FAILED</strong>
+                </div>
+
+                <div class="forensic-card">
+                    <span>DMARC</span>
+                    <strong class="failed">FAILED</strong>
+                </div>
+                <div class="forensic-card">
+                    <span>Reply-To</span>
+                    <strong class="warning">MISMATCH</strong>
+                </div>
+                </div>
+                </section>
+
+
+                <section id="reportsPage" class="page">
+
+<div class="page-heading">
+
+<div class="section-label">
+
+FORENSIC REPORTS
+
+</div>
+
+<h1>Investigation Reports</h1>
+
+<p>
+
+Generated forensic investigation summaries.
+
+</p>
+
+</div>
+
+<div class="report-card">
+
+<div>
+
+<h3>CEO Impersonation</h3>
+
+<p>
+
+Business Email Compromise. Risk 94/100
+
+</p>
+
+</div>
+
+<button>
+
+View Report →
+
+</button>
+
+</div>
+
+<div class="report-card">
+
+<div>
+
+<h3>Fake Invoice</h3>
+
+<p>
+
+Financial Fraud Risk 81/100
+
+</p>
+
+</div>
+
+<button>
+
+View Report →
+
+</button>
+
+</div>
+
+</section>
+
+</main>
+<footer>
+    <span>
+        Email Forensic AI : AI-Powered Cyber Threat Investigation
+    </span>
+    <span>
+        SIH 2026
+    </span>
+</footer>
+
+<script 
+src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
+</script>
+
+<script src="script.js">
+
+</script>
+</body>
+</html>
+
