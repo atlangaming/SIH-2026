@@ -115,13 +115,19 @@ def enrich_ip(ip: str) -> dict:
     if not ip:
         return {}
     try:
-        resp = requests.get(f"http://ip-api.com/json/{ip}?fields=status,country,city,isp,proxy,hosting", timeout=5).json()
+        # Added lat,lon to fields
+        resp = requests.get(
+            f"http://ip-api.com/json/{ip}?fields=status,country,city,isp,proxy,hosting,lat,lon", 
+            timeout=5
+        ).json()
         return {
             "country": resp.get("country", "Unknown"),
             "city": resp.get("city", "Unknown"),
             "isp": resp.get("isp", "Unknown"),
             "is_proxy_or_vpn": resp.get("proxy", False),
             "is_hosting_provider": resp.get("hosting", False),
+            "lat": resp.get("lat"),
+            "lon": resp.get("lon")
         }
     except Exception:
         return {"error": "IP lookup timeout"}

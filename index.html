@@ -1,542 +1,193 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>Email Forensic AI</title>
-
-    <link rel="stylesheet" href="style.css">
-
-    <!-- Leaflet Map CSS -->
-    <link
-        rel="stylesheet"
-        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-    >
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MailForensics SOC Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Leaflet Map CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="style.css" />
 </head>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased p-6">
+  <div class="max-w-7xl mx-auto space-y-6">
 
-<body>
-
-    <!-- =========================
-         TOP HEADER
-    ========================== -->
-
-    <header class="topbar">
-
-        <div class="logo-area">
-
-            <div class="logo">
-                ✦
-            </div>
-
-            <div>
-                <h2>Email Forensic <span>AI</span></h2>
-                <p>Threat Intelligence Platform</p>
-            </div>
-
+    <!-- Top Navigation / Status Header -->
+    <header class="flex flex-col md:flex-row md:items-center justify-between pb-6 border-b border-slate-800 gap-4">
+      <div>
+        <div class="flex items-center gap-3">
+          <span class="h-3 w-3 rounded-full bg-emerald-500 animate-pulse"></span>
+          <h1 class="text-2xl font-black tracking-tight text-white">EMAIL FORENSIC DASHBOARD</h1>
         </div>
-
-        <div class="status">
-            <span class="status-dot"></span>
-            System Operational
-        </div>
-
+        <p class="text-xs text-slate-400 font-mono mt-1">REAL-TIME INGESTION • GROQ NLP ENGINE • RELAY AUDIT</p>
+      </div>
+      <div class="flex items-center gap-3">
+        <span id="connection-status" class="px-3 py-1 text-xs font-mono rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">
+          Connecting to WebSocket...
+        </span>
+        <span id="scan-timestamp" class="text-xs font-mono text-slate-500">Waiting for email...</span>
+      </div>
     </header>
 
-
-    <!-- =========================
-         NAVIGATION
-    ========================== -->
-
-    <nav class="navigation">
-
-        <button class="nav-item active" data-page="dashboard">
-            <span>▦</span>
-            Dashboard
-        </button>
-
-        <button class="nav-item" data-page="investigate">
-            <span>⌁</span>
-            Investigate
-        </button>
-
-        <button class="nav-item" data-page="map">
-            <span>◎</span>
-            Origin Map
-        </button>
-
-        <button class="nav-item" data-page="forensics">
-            <span>◈</span>
-            Forensics
-        </button>
-
-        <button class="nav-item" data-page="reports">
-            <span>▤</span>
-            Reports
-        </button>
-
-    </nav>
-
-
-    <!-- =========================
-         MAIN
-    ========================== -->
-
-    <main>
-
-
-        <!-- =========================
-             DASHBOARD
-        ========================== -->
-
-        <section id="dashboardPage" class="page active-page">
-
-            <section class="hero">
-
-                <div class="badge">
-                    ✦ AI-POWERED EMAIL FORENSICS
-                </div>
-
-                <h1>
-                    Investigate.
-                    <span>Detect.</span>
-                    Protect.
-                </h1>
-
-                <p>
-                    Analyze suspicious emails with AI-powered threat detection,
-                    email header forensics, domain intelligence and
-                    infrastructure analysis.
-                </p>
-
-            </section>
-
-
-            <!-- UPLOAD -->
-
-            <section class="upload-card">
-
-                <div class="card-header">
-
-                    <div>
-                        <h2>Investigate Suspicious Email</h2>
-
-                        <p>
-                            Upload the original <b>.EML</b> file for forensic analysis.
-                        </p>
-                    </div>
-
-                    <div class="secure">
-                        🔒 Secure Analysis
-                    </div>
-
-                </div>
-
-
-                <div class="drop-area" id="dropArea">
-
-                    <input
-                        type="file"
-                        id="fileInput"
-                        accept=".eml"
-                        hidden
-                    >
-
-                    <div class="upload-circle">
-                        ↑
-                    </div>
-
-                    <h3>
-                        Drop your .EML file here
-                    </h3>
-
-                    <p>
-                        or
-                        <button id="browseButton">
-                            Browse Files
-                        </button>
-                    </p>
-
-                    <small>
-                        Supported format: .EML • Maximum size: 25 MB
-                    </small>
-
-                </div>
-
-
-                <div class="file-box" id="fileBox">
-
-                    <div class="file-info">
-
-                        <div class="file-icon">
-                            ✉
-                        </div>
-
-                        <div>
-                            <strong id="fileName">
-                                email.eml
-                            </strong>
-
-                            <span id="fileSize">
-                                0 KB
-                            </span>
-                        </div>
-
-                    </div>
-
-                    <button id="removeButton">
-                        Remove
-                    </button>
-
-                </div>
-
-
-                <button
-                    class="analyze-button"
-                    id="analyzeButton"
-                >
-                    Analyze Email
-                    <span>→</span>
-                </button>
-
-                <div id="message"></div>
-
-            </section>
-
-
-            <!-- FEATURES -->
-
-            <section class="features">
-
-                <div class="section-label">
-                    FORENSIC ENGINE
-                </div>
-
-                <h2>What we analyze</h2>
-
-
-                <div class="feature-grid">
-
-                    <div class="feature">
-                        <div class="feature-icon">🛡</div>
-                        <h3>Authentication</h3>
-                        <p>SPF, DKIM and DMARC verification.</p>
-                    </div>
-
-                    <div class="feature">
-                        <div class="feature-icon">⌁</div>
-                        <h3>Header Forensics</h3>
-                        <p>Received, Reply-To and Return-Path analysis.</p>
-                    </div>
-
-                    <div class="feature">
-                        <div class="feature-icon">↗</div>
-                        <h3>URL Intelligence</h3>
-                        <p>Detect suspicious and malicious links.</p>
-                    </div>
-
-                    <div class="feature">
-                        <div class="feature-icon">◉</div>
-                        <h3>AI Detection</h3>
-                        <p>Detect phishing, BEC and fraud patterns.</p>
-                    </div>
-
-                    <div class="feature">
-                        <div class="feature-icon">⌘</div>
-                        <h3>Infrastructure</h3>
-                        <p>Investigate IP, ASN and hosting infrastructure.</p>
-                    </div>
-
-                    <div class="feature">
-                        <div class="feature-icon">◎</div>
-                        <h3>Origin Analysis</h3>
-                        <p>Identify probable origin infrastructure.</p>
-                    </div>
-
-                </div>
-
-            </section>
-
-        </section>
-
-
-        <!-- =========================
-             INVESTIGATE PAGE
-        ========================== -->
-
-        <section id="investigatePage" class="page">
-
-            <div class="page-heading">
-
-                <div class="section-label">
-                    EMAIL INVESTIGATION
-                </div>
-
-                <h1>Investigate Email</h1>
-
-                <p>
-                    Upload suspicious email evidence for analysis.
-                </p>
-
+    <!-- Waiting State (hidden once scan received) -->
+    <div id="empty-state" class="py-24 text-center border border-dashed border-slate-800 rounded-2xl bg-slate-900/30">
+      <p class="text-slate-400 text-sm">Scan an email from the Gmail Add-on to trigger real-time telemetry.</p>
+    </div>
+
+    <!-- Active Report Container -->
+    <main id="report-view" class="hidden space-y-6">
+
+      <!-- Row 1: Executive Overview Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <!-- Risk Score Card -->
+        <div class="p-5 rounded-xl border border-slate-800 bg-slate-900/80 flex flex-col justify-between">
+          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Overall Risk Score</span>
+          <div class="flex items-baseline gap-2 my-2">
+            <span id="risk-score" class="text-5xl font-black font-mono">--</span>
+            <span class="text-slate-500 text-sm font-mono">/ 100</span>
+          </div>
+          <span id="risk-badge" class="inline-block text-xs font-semibold px-2.5 py-1 rounded w-fit">Pending</span>
+        </div>
+
+        <!-- Subject & Sender -->
+        <div class="p-5 rounded-xl border border-slate-800 bg-slate-900/80 md:col-span-2 space-y-2">
+          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Message Header Metadata</span>
+          <div>
+            <div class="text-xs text-slate-500">SUBJECT</div>
+            <div id="email-subject" class="font-semibold text-slate-200 truncate">--</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500">FROM</div>
+            <div id="email-sender" class="font-mono text-sm text-slate-300 truncate">--</div>
+          </div>
+        </div>
+
+        <!-- Auth Status Indicators -->
+        <div class="p-5 rounded-xl border border-slate-800 bg-slate-900/80 space-y-3">
+          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Authentication</span>
+          <div class="grid grid-cols-3 gap-2 pt-1">
+            <div class="text-center p-2 rounded bg-slate-950 border border-slate-800">
+              <div class="text-[10px] text-slate-500 font-mono">SPF</div>
+              <div id="auth-spf" class="font-bold text-xs mt-1">--</div>
             </div>
-
-            <div class="simple-card">
-
-                <div class="big-icon">
-                    ✉
-                </div>
-
-                <h2>Start a New Investigation</h2>
-
-                <p>
-                    Upload an original .EML file to begin forensic analysis.
-                </p>
-
-                <button
-                    class="primary-button"
-                    id="investigateUpload"
-                >
-                    Upload Email →
-                </button>
-
+            <div class="text-center p-2 rounded bg-slate-950 border border-slate-800">
+              <div class="text-[10px] text-slate-500 font-mono">DKIM</div>
+              <div id="auth-dkim" class="font-bold text-xs mt-1">--</div>
             </div>
-
-        </section>
-
-
-        <!-- =========================
-             ORIGIN MAP PAGE
-        ========================== -->
-
-        <section id="mapPage" class="page">
-
-            <div class="page-heading">
-
-                <div class="section-label">
-                    INFRASTRUCTURE INTELLIGENCE
-                </div>
-
-                <h1>Probable Origin Infrastructure</h1>
-
-                <p>
-                    Geographic intelligence derived from available
-                    technical evidence.
-                </p>
-
+            <div class="text-center p-2 rounded bg-slate-950 border border-slate-800">
+              <div class="text-[10px] text-slate-500 font-mono">DMARC</div>
+              <div id="auth-dmarc" class="font-bold text-xs mt-1">--</div>
             </div>
+          </div>
+        </div>
+      </div>
 
+      <!-- Row 2: AI Analysis & Score Logic Breakdown -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        
+        <!-- Groq AI Body Analysis Card -->
+        <div class="p-6 rounded-xl border border-slate-800 bg-slate-900/80 space-y-4">
+          <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+            <h2 class="text-sm font-bold tracking-wide uppercase text-slate-300 flex items-center gap-2">
+              <span class="h-2 w-2 rounded-full bg-cyan-400"></span> Groq AI Semantic Body Analysis
+            </h2>
+            <span id="bec-score" class="font-mono text-xs px-2 py-0.5 rounded bg-cyan-950 border border-cyan-800 text-cyan-300">
+              BEC Risk: --
+            </span>
+          </div>
 
-            <div class="map-layout">
-
-                <!-- MAP -->
-
-                <div class="map-container">
-
-                    <div id="originMap"></div>
-
-                </div>
-
-
-                <!-- INFORMATION -->
-
-                <div class="origin-panel">
-
-                    <div class="panel-title">
-                        <span class="location-dot"></span>
-                        Infrastructure Detected
-                    </div>
-
-
-                    <h2>
-                        Terna Engineering College
-                    </h2>
-
-                    <p class="location">
-                        Navi Mumbai, Maharashtra
-                    </p>
-
-
-                    <div class="info-line">
-                        <span>IP Address</span>
-                        <strong>203.xxx.xxx.xxx</strong>
-                    </div>
-
-                    <div class="info-line">
-                        <span>ASN</span>
-                        <strong>Demo ASN</strong>
-                    </div>
-
-                    <div class="info-line">
-                        <span>Network</span>
-                        <strong>Educational</strong>
-                    </div>
-
-                    <div class="info-line">
-                        <span>Reputation</span>
-                        <strong class="safe">
-                            Demo Data
-                        </strong>
-                    </div>
-
-                    <div class="info-line">
-                        <span>Confidence</span>
-                        <strong class="confidence-text">
-                            76%
-                        </strong>
-                    </div>
-
-
-                    <div class="map-warning">
-
-                        <strong>
-                            ⚠ Attribution Notice
-                        </strong>
-
-                        <p>
-                            This represents probable origin infrastructure
-                            based on available technical evidence. It does
-                            not establish the attacker's physical location
-                            or identity.
-                        </p>
-
-                    </div>
-
-                </div>
-
+          <div class="grid grid-cols-2 gap-3 font-mono text-xs">
+            <div class="p-3 rounded bg-slate-950 border border-slate-800/80">
+              <span class="text-slate-500">Urgency Trigger:</span>
+              <div id="ai-urgency" class="font-bold mt-1">--</div>
             </div>
-
-        </section>
-
-
-        <!-- =========================
-             FORENSICS PAGE
-        ========================== -->
-
-        <section id="forensicsPage" class="page">
-
-            <div class="page-heading">
-
-                <div class="section-label">
-                    EMAIL FORENSICS
-                </div>
-
-                <h1>Header Forensics</h1>
-
-                <p>
-                    Inspect authentication and email routing evidence.
-                </p>
-
+            <div class="p-3 rounded bg-slate-950 border border-slate-800/80">
+              <span class="text-slate-500">Financial/BEC Request:</span>
+              <div id="ai-financial" class="font-bold mt-1">--</div>
             </div>
+          </div>
 
+          <div>
+            <div class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Flagged Suspicious Phrases:</div>
+            <ul id="flagged-phrases-list" class="space-y-1.5 text-xs text-rose-300">
+              <li class="italic text-slate-500">No phrases detected</li>
+            </ul>
+          </div>
+        </div>
 
-            <div class="forensic-grid">
+        <!-- Score Logic Calculation Details -->
+        <div class="p-6 rounded-xl border border-slate-800 bg-slate-900/80 space-y-4">
+          <h2 class="text-sm font-bold tracking-wide uppercase text-slate-300 border-b border-slate-800 pb-3">
+            Score Logic Audit Trail
+          </h2>
+          <ul id="score-logic-list" class="space-y-2 font-mono text-xs text-slate-300">
+            <!-- Populated via script.js -->
+          </ul>
+        </div>
+      </div>
 
-                <div class="forensic-card">
-                    <span>SPF</span>
-                    <strong class="failed">FAILED</strong>
-                </div>
+      <!-- Row 3: Origin IP Geolocation Map & Infrastructure -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Map View -->
+        <div class="lg:col-span-2 rounded-xl border border-slate-800 bg-slate-900/80 overflow-hidden flex flex-col">
+          <div class="p-4 border-b border-slate-800 flex justify-between items-center bg-slate-950">
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Origin IP Geolocation</span>
+            <span id="map-ip-label" class="font-mono text-xs text-cyan-400">--</span>
+          </div>
+          <div id="map" class="h-72 w-full bg-slate-950"></div>
+        </div>
 
-                <div class="forensic-card">
-                    <span>DKIM</span>
-                    <strong class="failed">FAILED</strong>
-                </div>
+        <!-- Infrastructure Details -->
+        <div class="p-6 rounded-xl border border-slate-800 bg-slate-900/80 space-y-4">
+          <h2 class="text-sm font-bold tracking-wide uppercase text-slate-300 border-b border-slate-800 pb-2">
+            Infrastructure OSINT
+          </h2>
+          <div class="space-y-3 font-mono text-xs">
+            <div>
+              <span class="text-slate-500 block">Origin Location:</span>
+              <span id="origin-location" class="text-slate-200">--</span>
+            </div>
+            <div>
+              <span class="text-slate-500 block">ISP / AS:</span>
+              <span id="origin-isp" class="text-slate-200">--</span>
+            </div>
+            <div>
+              <span class="text-slate-500 block">Hosting Provider (Cloud):</span>
+              <span id="infra-hosting" class="text-slate-200">--</span>
+            </div>
+            <div>
+              <span class="text-slate-500 block">VPN / Proxy:</span>
+              <span id="infra-proxy" class="text-slate-200">--</span>
+            </div>
+          </div>
+        </div>
+      </div>
 
-                <div class="forensic-card">
-                    <span>DMARC</span>
-                    <strong class="failed">FAILED</strong>
-                </div>
-                <div class="forensic-card">
-                    <span>Reply-To</span>
-                    <strong class="warning">MISMATCH</strong>
-                </div>
-                </div>
-                </section>
+      <!-- Row 4: Hop-by-Hop Relay Chain -->
+      <div class="p-6 rounded-xl border border-slate-800 bg-slate-900/80 space-y-4">
+        <h2 class="text-sm font-bold tracking-wide uppercase text-slate-400">Hop-by-Hop Relay Chain</h2>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm text-left text-slate-400">
+            <thead class="text-xs text-slate-500 uppercase bg-slate-950 border-b border-slate-800">
+              <tr>
+                <th class="px-4 py-3 font-medium">Hop</th>
+                <th class="px-4 py-3 font-medium">Sending Server (From)</th>
+                <th class="px-4 py-3 font-medium">Receiving Server (By)</th>
+                <th class="px-4 py-3 font-medium">IP Address</th>
+              </tr>
+            </thead>
+            <tbody id="relay-table-body" class="divide-y divide-slate-800/50 font-mono text-xs">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
 
+    </main>
+  </div>
 
-                <section id="reportsPage" class="page">
-
-<div class="page-heading">
-
-<div class="section-label">
-
-FORENSIC REPORTS
-
-</div>
-
-<h1>Investigation Reports</h1>
-
-<p>
-
-Generated forensic investigation summaries.
-
-</p>
-
-</div>
-
-<div class="report-card">
-
-<div>
-
-<h3>CEO Impersonation</h3>
-
-<p>
-
-Business Email Compromise. Risk 94/100
-
-</p>
-
-</div>
-
-<button>
-
-View Report →
-
-</button>
-
-</div>
-
-<div class="report-card">
-
-<div>
-
-<h3>Fake Invoice</h3>
-
-<p>
-
-Financial Fraud Risk 81/100
-
-</p>
-
-</div>
-
-<button>
-
-View Report →
-
-</button>
-
-</div>
-
-</section>
-
-</main>
-<footer>
-    <span>
-        Email Forensic AI : AI-Powered Cyber Threat Investigation
-    </span>
-    <span>
-        SIH 2026
-    </span>
-</footer>
-
-<script 
-src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
-</script>
-
-<script src="script.js">
-
-</script>
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
-

@@ -1,455 +1,166 @@
-// ========================================
-// EMAIL FORENSIC AI
-// MAIN JAVASCRIPT
-// ========================================
-
-
-// ========================================
-// FILE UPLOAD
-// ========================================
-
-const fileInput = document.getElementById("fileInput");
-const browseButton = document.getElementById("browseButton");
-const dropArea = document.getElementById("dropArea");
-
-const fileBox = document.getElementById("fileBox");
-const fileName = document.getElementById("fileName");
-const fileSize = document.getElementById("fileSize");
-
-const removeButton = document.getElementById("removeButton");
-const analyzeButton = document.getElementById("analyzeButton");
-const message = document.getElementById("message");
-
-let selectedFile = null;
-
-
-// Browse button
-
-browseButton.addEventListener("click", function () {
-
-    fileInput.click();
-
-});
-
-
-// File selected
-
-fileInput.addEventListener("change", function () {
-
-    if (fileInput.files.length > 0) {
-
-        processFile(fileInput.files[0]);
-
-    }
-
-});
-
-
-// Drag over
-
-dropArea.addEventListener("dragover", function (event) {
-
-    event.preventDefault();
-
-    dropArea.classList.add("dragging");
-
-});
-
-
-// Drag leave
-
-dropArea.addEventListener("dragleave", function () {
-
-    dropArea.classList.remove("dragging");
-
-});
-
-
-// Drop
-
-dropArea.addEventListener("drop", function (event) {
-
-    event.preventDefault();
-
-    dropArea.classList.remove("dragging");
-
-    const file = event.dataTransfer.files[0];
-
-    if (file) {
-
-        processFile(file);
-
-    }
-
-});
-
-
-// Process file
-
-function processFile(file) {
-
-    message.textContent = "";
-
-    // Check extension
-
-    if (!file.name.toLowerCase().endsWith(".eml")) {
-
-        message.textContent =
-            "Please select a valid .EML file.";
-
-        message.style.color = "#ff5365";
-
-        return;
-
-    }
-
-
-    // Maximum 25 MB
-
-    const maxSize = 25 * 1024 * 1024;
-
-    if (file.size > maxSize) {
-
-        message.textContent =
-            "File is too large. Maximum size is 25 MB.";
-
-        message.style.color = "#ff5365";
-
-        return;
-
-    }
-
-
-    selectedFile = file;
-
-    fileName.textContent = file.name;
-
-    fileSize.textContent =
-        formatFileSize(file.size);
-
-    fileBox.classList.add("show");
-
-    message.textContent =
-        "Email ready for forensic analysis.";
-
-    message.style.color = "#35d996";
-
+// SIH-2026/script.js
+let mapInstance = null;
+let mapMarker = null;
+
+// Initialize the Leaflet Map
+function initMap() {
+  if (!mapInstance) {
+    // Default view: global centered
+    mapInstance = L.map('map').setView([20, 0], 2);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; OpenStreetMap &copy; CARTO',
+      maxZoom: 18
+    }).addTo(mapInstance);
+  }
 }
 
-
-// File size
-
-function formatFileSize(bytes) {
-
-    if (bytes < 1024) {
-
-        return bytes + " B";
-
+// Update Map with Latitude & Longitude from IP OSINT
+function updateMapLocation(lat, lon, label) {
+  initMap();
+  if (lat && lon) {
+    if (mapMarker) {
+      mapInstance.removeLayer(mapMarker);
     }
-
-    if (bytes < 1024 * 1024) {
-
-        return (bytes / 1024).toFixed(1) + " KB";
-
-    }
-
-    return (
-        bytes / (1024 * 1024)
-    ).toFixed(2) + " MB";
-
+    mapInstance.setView([lat, lon], 9);
+    mapMarker = L.marker([lat, lon])
+      .addTo(mapInstance)
+      .bindPopup(`<b>${label}</b><br>Lat: ${lat}, Lon: ${lon}`)
+      .openPopup();
+    mapInstance.invalidateSize();
+  }
 }
 
+// Setup WebSocket Connection
+const WS_URL = "wss://sih-2026-qzr1.onrender.com/ws";
+const statusBadge = document.getElementById("connection-status");
+const ws = new WebSocket(WS_URL);
 
-// Remove file
-
-removeButton.addEventListener("click", function () {
-
-    selectedFile = null;
-
-    fileInput.value = "";
-
-    fileBox.classList.remove("show");
-
-    message.textContent = "";
-
-});
-
-
-// Analyze
-
-analyzeButton.addEventListener("click", function () {
-
-    if (!selectedFile) {
-
-        message.textContent =
-            "Please select an .EML file first.";
-
-        message.style.color = "#ff5365";
-
-        return;
-
-    }
-
-
-    analyzeButton.disabled = true;
-
-    analyzeButton.innerHTML =
-        "Analyzing Email <span>...</span>";
-
-    message.textContent =
-        "Running header, domain and threat analysis...";
-
-    message.style.color = "#35d7ff";
-
-
-    setTimeout(function () {
-
-        analyzeButton.disabled = false;
-
-        analyzeButton.innerHTML =
-            "Analysis Complete <span>✓</span>";
-
-        message.textContent =
-            "Demo analysis complete. Backend integration will be added later.";
-
-        message.style.color = "#35d996";
-
-    }, 2500);
-
-});
-
-
-// ========================================
-// PAGE NAVIGATION
-// ========================================
-
-const navItems =
-    document.querySelectorAll(".nav-item");
-
-
-const pages = {
-
-    dashboard:
-        document.getElementById("dashboardPage"),
-
-    investigate:
-        document.getElementById("investigatePage"),
-
-    map:
-        document.getElementById("mapPage"),
-
-    forensics:
-        document.getElementById("forensicsPage"),
-
-    reports:
-        document.getElementById("reportsPage")
-
+ws.onopen = () => {
+  statusBadge.textContent = "SOC WebSocket Connected";
+  statusBadge.className = "px-3 py-1 text-xs font-mono rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
+  initMap();
 };
 
+ws.onclose = () => {
+  statusBadge.textContent = "Disconnected (Retrying...)";
+  statusBadge.className = "px-3 py-1 text-xs font-mono rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/20";
+};
 
-let originMap = null;
+ws.onmessage = (event) => {
+  const data = JSON.parse(event.data);
+  document.getElementById("empty-state").classList.add("hidden");
+  document.getElementById("report-view").classList.remove("hidden");
 
+  // 1. Timestamps & Basic Headers
+  document.getElementById("scan-timestamp").textContent = `Scanned at ${data.timestamp}`;
+  document.getElementById("email-subject").textContent = data.summary.subject || "(No Subject)";
+  document.getElementById("email-sender").textContent = data.summary.sender || "Unknown Sender";
 
-// Navigation click
+  // 2. Risk Score & Badge
+  const score = data.summary.risk_score;
+  const scoreEl = document.getElementById("risk-score");
+  const badgeEl = document.getElementById("risk-badge");
+  scoreEl.textContent = score;
 
-navItems.forEach(function (item) {
+  if (score >= 70) {
+    scoreEl.className = "text-5xl font-black font-mono text-rose-500";
+    badgeEl.textContent = "CRITICAL RISK";
+    badgeEl.className = "inline-block text-xs font-semibold px-2.5 py-1 rounded bg-rose-950 text-rose-300 border border-rose-800";
+  } else if (score >= 35) {
+    scoreEl.className = "text-5xl font-black font-mono text-amber-400";
+    badgeEl.textContent = "SUSPICIOUS";
+    badgeEl.className = "inline-block text-xs font-semibold px-2.5 py-1 rounded bg-amber-950 text-amber-300 border border-amber-800";
+  } else {
+    scoreEl.className = "text-5xl font-black font-mono text-emerald-400";
+    badgeEl.textContent = "SAFE / CLEAN";
+    badgeEl.className = "inline-block text-xs font-semibold px-2.5 py-1 rounded bg-emerald-950 text-emerald-300 border border-emerald-800";
+  }
 
-    item.addEventListener("click", function () {
+  // 3. Authentication Status Badges
+  const renderAuth = (elementId, value) => {
+    const el = document.getElementById(elementId);
+    const pass = (value || "").toLowerCase() === "pass";
+    el.textContent = pass ? "PASS" : "FAIL";
+    el.className = `font-bold text-xs mt-1 ${pass ? "text-emerald-400" : "text-rose-400"}`;
+  };
+  renderAuth("auth-spf", data.authentication.spf);
+  renderAuth("auth-dkim", data.authentication.dkim);
+  renderAuth("auth-dmarc", data.authentication.dmarc);
 
-        const pageName =
-            item.getAttribute("data-page");
+  // 4. Groq NLP Semantic Insights
+  const nlp = data.intelligence.nlp || {};
+  document.getElementById("bec-score").textContent = `BEC Risk: ${nlp.overall_bec_risk || 0}/100`;
 
+  const urgencyEl = document.getElementById("ai-urgency");
+  urgencyEl.textContent = nlp.urgency_flag ? "TRUE (Urgency Pressure)" : "FALSE (Normal)";
+  urgencyEl.className = `font-bold mt-1 ${nlp.urgency_flag ? "text-rose-400" : "text-slate-400"}`;
 
-        // Remove active from buttons
+  const financialEl = document.getElementById("ai-financial");
+  financialEl.textContent = nlp.financial_request ? "TRUE (Payment / Transfer)" : "FALSE (Normal)";
+  financialEl.className = `font-bold mt-1 ${nlp.financial_request ? "text-rose-400" : "text-slate-400"}`;
 
-        navItems.forEach(function (nav) {
-
-            nav.classList.remove("active");
-
-        });
-
-
-        // Activate clicked button
-
-        item.classList.add("active");
-
-
-        // Hide all pages
-
-        Object.values(pages).forEach(function (page) {
-
-            page.classList.remove("active-page");
-
-        });
-
-
-        // Show selected page
-
-        pages[pageName].classList.add("active-page");
-
-
-        // If map was clicked
-
-        if (pageName === "map") {
-
-            setTimeout(function () {
-
-                initializeOriginMap();
-
-            }, 100);
-
-        }
-
+  const phraseList = document.getElementById("flagged-phrases-list");
+  phraseList.innerHTML = "";
+  if (nlp.suspicious_phrases && nlp.suspicious_phrases.length > 0) {
+    nlp.suspicious_phrases.forEach((phrase) => {
+      const li = document.createElement("li");
+      li.className = "bg-rose-950/40 border border-rose-900/60 p-2 rounded";
+      li.textContent = `• "${phrase}"`;
+      phraseList.appendChild(li);
     });
+  } else {
+    phraseList.innerHTML = `<li class="italic text-slate-500">None (Clean body text)</li>`;
+  }
 
-});
+  // 5. Score Logic Breakdown List
+  const logicList = document.getElementById("score-logic-list");
+  logicList.innerHTML = "";
+  const addLogic = (text, impactClass = "text-rose-400") => {
+    const li = document.createElement("li");
+    li.className = "flex justify-between items-center py-1 border-b border-slate-800/40";
+    li.innerHTML = `<span>${text}</span>`;
+    logicList.appendChild(li);
+  };
 
+  if (data.authentication.spf !== "pass") addLogic("+20 (SPF Authentication Failed)");
+  if (data.authentication.dkim !== "pass") addLogic("+20 (DKIM Verification Failed)");
+  if (data.authentication.dmarc !== "pass") addLogic("+25 (DMARC Verification Failed)");
+  if (data.intelligence.ip?.is_hosting_provider) addLogic("+15 (Origin is Datacenter / Cloud IP)");
+  if (data.intelligence.ip?.is_proxy_or_vpn) addLogic("+10 (Origin is VPN / Anonymous Proxy)");
+  if (nlp.overall_bec_risk > 0) addLogic(`+${Math.round(nlp.overall_bec_risk * 0.4)} (Groq NLP BEC Risk Weight)`);
+  if (nlp.financial_request) addLogic("+15 (Groq NLP: Payment Diversion Request)");
 
-// ========================================
-// ORIGIN MAP
-// ========================================
+  if (logicList.children.length === 0) {
+    logicList.innerHTML = `<li class="text-emerald-400 py-1">+0 (All checks passed. Trusted infrastructure & clean body)</li>`;
+  }
 
-function initializeOriginMap() {
+  // 6. Map & Geolocation OSINT
+  const ipInfo = data.intelligence.ip || {};
+  const originIP = data.routing.origin_ip;
+  document.getElementById("map-ip-label").textContent = `${originIP} (${ipInfo.city || ""}, ${ipInfo.country || ""})`;
+  document.getElementById("origin-location").textContent = `${ipInfo.city || "Unknown"}, ${ipInfo.country || "Unknown"}`;
+  document.getElementById("origin-isp").textContent = ipInfo.isp || "Unknown";
+  document.getElementById("infra-hosting").textContent = ipInfo.is_hosting_provider ? "TRUE (Cloud Host)" : "FALSE";
+  document.getElementById("infra-proxy").textContent = ipInfo.is_proxy_or_vpn ? "TRUE (Proxy/VPN)" : "FALSE";
 
-    // If map already exists
+  if (ipInfo.lat && ipInfo.lon) {
+    updateMapLocation(ipInfo.lat, ipInfo.lon, `${originIP} - ${ipInfo.city}`);
+  }
 
-    if (originMap !== null) {
-
-        originMap.invalidateSize();
-
-        return;
-
-    }
-
-
-    // ====================================
-    // TERNA ENGINEERING COLLEGE
-    // ====================================
-
-    const latitude = 19.1653;
-
-    const longitude = 72.9972;
-
-
-    // Create map
-
-    originMap = L.map("originMap", {
-
-        center: [
-            latitude,
-            longitude
-        ],
-
-        zoom: 16
-
+  // 7. Hop-by-Hop Relay Chain Table
+  const relayBody = document.getElementById("relay-table-body");
+  relayBody.innerHTML = "";
+  if (data.routing.relay_chain) {
+    data.routing.relay_chain.forEach((hop) => {
+      const tr = document.createElement("tr");
+      tr.className = "hover:bg-slate-800/40";
+      tr.innerHTML = `
+        <td class="px-4 py-2.5 text-slate-400">#${hop.hop}</td>
+        <td class="px-4 py-2.5 text-emerald-400/90">${hop.from_server}</td>
+        <td class="px-4 py-2.5 text-cyan-400/90">${hop.by_server}</td>
+        <td class="px-4 py-2.5 text-slate-300 font-mono">${hop.ip}</td>
+      `;
+      relayBody.appendChild(tr);
     });
-
-
-    // OpenStreetMap
-
-    L.tileLayer(
-        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-        {
-
-            maxZoom: 19,
-
-            attribution:
-                "&copy; OpenStreetMap contributors"
-
-        }
-    ).addTo(originMap);
-
-
-    // Marker
-
-    const marker = L.marker([
-
-        latitude,
-        longitude
-
-    ]).addTo(originMap);
-
-
-    // Popup
-
-    marker.bindPopup(`
-
-        <div style="font-size:13px">
-
-            <strong>
-                Probable Origin Infrastructure
-            </strong>
-
-            <br><br>
-
-            Terna Engineering College
-
-            <br>
-
-            Navi Mumbai, Maharashtra
-
-            <br><br>
-
-            <strong>
-                Confidence: 76%
-            </strong>
-
-        </div>
-
-    `).openPopup();
-
-}
-
-
-// ========================================
-// INVESTIGATE BUTTON
-// ========================================
-
-const investigateUpload =
-    document.getElementById("investigateUpload");
-
-
-investigateUpload.addEventListener(
-    "click",
-    function () {
-
-        // Go back to dashboard
-
-        navItems.forEach(function (nav) {
-
-            nav.classList.remove("active");
-
-        });
-
-
-        navItems[0].classList.add("active");
-
-
-        Object.values(pages).forEach(
-            function (page) {
-
-                page.classList.remove(
-                    "active-page"
-                );
-
-            }
-        );
-
-
-        pages.dashboard.classList.add(
-            "active-page"
-        );
-
-
-        // Scroll to upload section
-
-        document.querySelector(
-            ".upload-card"
-        ).scrollIntoView({
-
-            behavior: "smooth"
-
-        });
-
-    }
-);
+  }
+};
