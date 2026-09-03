@@ -114,3 +114,4 @@ zope.tales==7.0
 zope.testing==6.2
 zope.traversing==6.0
 zope.viewlet==6.0
+websockets
